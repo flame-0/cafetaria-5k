@@ -39,7 +39,7 @@ jobs:
         echo "BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
 
         mkdir -p tc/gcc
-        wget -q "https://github.com/mvaisakh/gcc-build/releases/download/06092026/eva-gcc-arm64-06092026.xz" -O tc/gcc.tar.xz
+        wget -q "https://github.com/mvaisakh/gcc-build/releases/download/13092026/eva-gcc-arm64-13092026.xz" -O tc/gcc.tar.xz
         tar -xf tc/gcc.tar.xz -C tc/gcc --strip-components=1
         export PATH=$PWD/tc/gcc/bin:$PATH
 
