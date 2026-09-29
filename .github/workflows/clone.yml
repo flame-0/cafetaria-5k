@@ -6,22 +6,18 @@ on:
       repository: { description: 'Repo', required: true, default: 'rezadinosaurus/butterflies_xiaomi_sm8250' }
       branch: { description: 'Branch (kosongkan untuk semua branch)', required: false, default: '' }
 
-env:
-  CHAT_ID: ${{ secrets.CHAT_ID }}
-  BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-
 jobs:
   clone:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-    - name: Start Notification
+    - name: Full clone and bundle
       run: |
-        curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" \
-        -d chat_id="${{ env.CHAT_ID }}" \
-        -d text="Full clone starting: ${{ github.event.inputs.repository }}"
+        export TZ="Antarctica/McMurdo"
+        BUILD_TIME=$(date +'%H%M-%d%m%y')
+        echo "BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
 
-    - name: Full clone
-      run: |
         REPO_URL="https://github.com/${{ github.event.inputs.repository }}.git"
         BRANCH="${{ github.event.inputs.branch }}"
 
@@ -31,13 +27,13 @@ jobs:
           git clone --no-single-branch "$REPO_URL" full-repo
           cd full-repo
           git fetch --all --tags
+          cd ..
         fi
 
-    - name: Create bundle
-      run: |
         cd full-repo
         git bundle create ../full-repo.bundle --all
         cd ..
+        
         SIZE=$(stat -c%s full-repo.bundle)
         LIMIT=$((1900*1024*1024))
         if [ "$SIZE" -gt "$LIMIT" ]; then
@@ -45,18 +41,15 @@ jobs:
           rm full-repo.bundle
         fi
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
+    - name: Create Release
+      uses: softprops/action-gh-release@v3
       with:
-        name: full-repo-bundle
-        path: |
+        tag_name: clone-${{ env.BUILD_TIME }}
+        name: Full Clone Mirror ${{ env.BUILD_TIME }}
+        files: |
           full-repo.bundle
           full-repo.bundle.part-*
-        retention-days: 3
-
-    - name: Telegram Notification
-      if: always()
-      run: |
-        curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" \
-        -d chat_id="${{ env.CHAT_ID }}" \
-        -d text="Full clone (bundle) done, cek artifact di Actions run ini."
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
