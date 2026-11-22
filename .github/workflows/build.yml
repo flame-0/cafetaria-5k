@@ -3,7 +3,7 @@ name: kernel build
 on:
     workflow_dispatch:
         inputs:
-            repository: { description: 'Repo', required: true, default: 'rezadinosaurus/butterflies_xiaomi_sm8250' }
+            repository: { description: 'Repo', required: true, default: 'rezadinosaurus/android_kernel_qcom_sm8250' }
             branch: { description: 'Branch', required: true, default: 'lineage-latte' }
             defconfig: { description: 'Defconfig', required: true, default: 'vendor/alioth_defconfig' }
             kernelsu_branch: { description: 'KSU Branch', required: false, default: 'master' }
